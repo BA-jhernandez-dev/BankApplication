@@ -1,0 +1,28 @@
+previos 
+
+--creamos la imagen 
+oc create is microservicio-base -n srvbasadev
+
+-------------Local ejemplo 3
+oc delete all,bc,svc,is,route,build -l app==microservicio-base -n srvbasadev
+oc delete build -l buildconfig=microservicio-base -n srvbasadev
+
+oc apply -f build.yml
+
+oc start-build microservicio-base --follow
+
+oc logs build/microservicio-base-2 -f
+
+oc new-app microservicio-base:latest --name=microservicio-base -n srvbasadev --labels=app.kubernetes.io/part-of=pruebas_openshift
+
+oc expose service/microservicio-base
+
+oc get route microservicio-base
+
+------------------------secret
+
+oc create secret generic spring-config-secret  --from-literal=SPRING_CONFIG_USERNAME=c0nf1g --from-literal=SPRING_CONFIG_PASSWORD=s3cr3t --dry-run=client -o yaml | oc apply -f -
+
+------------------------config map
+
+oc create configmap spring-config-map --from-literal=PROFILE=dev --from-literal=SPRING_CONFIG_LABEL=develop --from-literal=SPRING_CONFIG_IMPORT="optional:configserver:http://config-server-srvbasadev.apps.hnqaocpbasa.adbancat.hn" --dry-run=client -o yaml | oc apply -f -
